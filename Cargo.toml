@@ -1,0 +1,18 @@
+[package]
+name = "overwatch"
+version = "0.0.1"
+edition = "2021"
+authors = ["Jamie Wright"]
+description = "A set of custom-made utilities for scanning a given website's security"
+repository = "https://github.com/the-wright-jamie/overwatch"
+readme = "README.md"
+license = "GPL-3.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "^4.5.2", features = ["derive"] }
+clap-verbosity-flag = "2.2.0"
+env_logger = "0.11.3"
+log = "0.4.21"
+serde = { version = "1.0.197", features = ["derive"] }
