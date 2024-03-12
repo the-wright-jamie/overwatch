@@ -12,7 +12,8 @@ license = "GPL-3.0"
 
 [dependencies]
 clap = { version = "^4.5.2", features = ["derive"] }
-clap-verbosity-flag = "2.2.0"
-env_logger = "0.11.3"
+curl = "0.4.46"
 log = "0.4.21"
 serde = { version = "1.0.197", features = ["derive"] }
+simplelog = "0.12.2"
+try-catch = "0.2.2"
