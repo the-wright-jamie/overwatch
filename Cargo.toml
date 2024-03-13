@@ -12,8 +12,9 @@ license = "GPL-3.0"
 
 [dependencies]
 clap = { version = "^4.5.2", features = ["derive"] }
-curl = "0.4.46"
+isahc = "1.7"
 log = "0.4.21"
 serde = { version = "1.0.197", features = ["derive"] }
 simplelog = "0.12.2"
+toml = "0.8.11"
 try-catch = "0.2.2"

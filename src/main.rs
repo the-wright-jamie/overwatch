@@ -40,13 +40,12 @@ fn main() {
     );
 
     if logging_init.is_err() {
-        println!("Something went wrong when initating the logger. As a result, this program cannon continue.");
+        println!("Something went wrong when initating the logger. As a result, this program cannot continue.");
         process::exit(1);
     }
 
     drop(logging_init);
 
-    if !arguments.quiet        { modules::greetings::display_logo(); }
     // Change it so that we can dynamically add modules
     let target_check = modules::validate_target::validate(&arguments.target);
     if let Err(err) = target_check {
@@ -55,5 +54,5 @@ fn main() {
     }
     drop(target_check);
 
-    modules::check_headers::run(&arguments.target)
+    modules::check_headers::run(&arguments.target);
 }

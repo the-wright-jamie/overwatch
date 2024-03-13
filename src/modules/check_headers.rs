@@ -1,36 +1,26 @@
-use std::collections::HashMap;
-use try_catch::catch;
-use curl::easy::Easy;
-// use std::io::{stdout, Write};
-use log::{error, warn, info, debug};
+// imports
+use log::{error, info, debug};
+use isahc::prelude::*;
 
-pub fn run(target: &str) {
+// pub: allow access from outside
+pub fn run(target: &str) -> Result<(), isahc::Error> {
+    // Display some info to the user
     info!("Now checking headers...");
     debug!("Using cURL to get infomation about the target");
 
-    let mut easy = Easy::new();
-    let mut headers: HashMap<String, String> = HashMap::new();
+    let mut response = isahc::get(target)?;
 
-    easy.url(target).unwrap();
+    // Print some basic info about the response to standard output.
+    let content_security_policy = response.headers().get("content-security-policy");
+    match content_security_policy {
+        None => error!("LMAO what happened"),
+        Some(_) => info!("content-security-policy found"),
+    }
 
-    easy.header_function(move |buffer| {
-        let line = std::str::from_utf8(buffer).unwrap();
-        debug!("{}", line.replace('\n', ""));
-        let mut parts = line.splitn(2, ':');
-        let cloned_parts = parts.clone();
-        if cloned_parts.count() == 2 {
-            let key = parts.next().unwrap().trim().to_string();
-            let value = parts.next().unwrap().trim().to_string();
-            headers.insert(key, value);
-        }
-        true
-    }).unwrap();
+    // println!("{:#?}", response.headers());
 
-    easy.perform().unwrap();
+    // Read the response body as text into a string and print it.
+    // print!("{}", response.text()?);
 
-    // for header in &headers {
-    //
-    // }
-
-    debug!("Got {} from target", easy.response_code().unwrap());
+    Ok(())
 }
