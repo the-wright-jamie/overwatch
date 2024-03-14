@@ -1,0 +1,27 @@
+[metadata]
+title = "Rules for Headers Security Scoring"
+scan_type = 'headers'
+
+[content-security-policy]
+negative = ['unsafe-inline', "unsafe-eval"]
+positive = ["frame-ancestors", "default-src 'none'", "base-uri 'none'", "base-uri 'self'"]
+multiplier = 2
+required = true
+
+[x-content-type-options]
+negative = []
+positive = ['nosniff']
+multiplier = 1
+required = true
+
+[x-frame-options]
+negative = []
+positive = ["SAMEORIGIN"]
+multiplier = 1
+required = true
+
+[x-xss-protection]
+negative = []
+positive = ["1", "mode=block"]
+multiplier = 1
+required = true

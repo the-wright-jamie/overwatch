@@ -1,6 +1,6 @@
 [package]
 name = "overwatch"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2021"
 authors = ["Jamie Wright"]
 description = "A set of custom-made utilities for scanning a given website's security"
