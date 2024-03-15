@@ -1,27 +1,58 @@
+# Based on Mozilla and OWASP guidelines
+# https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Headers_Cheat_Sheet.html
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP etc...
+
 [metadata]
-title = "Rules for Headers Security Scoring"
+title = "Header Security Scoring"
 scan_type = 'headers'
 
 [content-security-policy]
-negative = ['unsafe-inline', "unsafe-eval"]
-positive = ["frame-ancestors", "default-src 'none'", "base-uri 'none'", "base-uri 'self'"]
-multiplier = 2
-required = true
+negative = ['unsafe-inline', "unsafe-eval", "img-src *", "script-src *", "style-src *", "font-src *", "child-src *", "object-src *", "report-uri"]
+positive = ["frame-ancestors", "default-src 'none'|default-src 'self'", "img-src 'self'", "script-src 'self'", "style-src 'self'", "font-src 'self'", "child-src 'self'", "object-src 'self'", "base-uri 'none'", "base-uri 'self'"]
+multiplier = 1
+
+[strict-transport-security]
+negative = []
+positive = ["max-age", "includeSubDomains", "preload"]
+multiplier = 1
 
 [x-content-type-options]
 negative = []
 positive = ['nosniff']
 multiplier = 1
-required = true
 
 [x-frame-options]
-negative = []
-positive = ["SAMEORIGIN"]
+negative = ["ALLOW-FROM"]
+positive = ["DENY|SAMEORIGIN"]
 multiplier = 1
-required = true
 
 [x-xss-protection]
-negative = []
-positive = ["1", "mode=block"]
+negative = ["present", "1", "mode=", "report="]
+positive = ["0"]
 multiplier = 1
-required = true
+
+[referrer-policy]
+negative = ["unsafe-url"]
+positive = ["strict-origin-when-cross-origin"]
+multiplier = 1
+
+[cache-control]
+negative = []
+positive = ["must-revalidate", "proxy-revalidate"]
+multiplier = 1
+
+[expect-ct]
+negative = ["present"]
+positive = []
+multiplier = 3
+
+[access-control-allow-origin]
+negative = []
+positive = ["same-origin"]
+multiplier = 1
+
+[x-powered-by]
+negative = ["present"]
+positive = []
+multiplier = 2
+

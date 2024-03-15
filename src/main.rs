@@ -1,11 +1,9 @@
-// imports
 use clap::Parser;
 use simplelog::*;
 use std::{process, path::Path, fs};
 use log::{error, info, debug};
 use crate::modules::{handle_rule_file, handle_tests, save_response};
 
-// modules
 mod modules;
 
 #[derive(Parser)]
@@ -30,13 +28,15 @@ pub struct Parameters {
     /// Trace mode: show all messages
     #[arg(long, conflicts_with = "quiet", conflicts_with = "verbose")]
     loud: bool,
+
+    /// Allows the user to define a custom rules folder location
+    #[arg(long, default_value_t = String::from("rules"))]
+    custom_rules_directory: String,
 }
 
 fn main() {
-    // Get the passed in arguments
     let arguments = Parameters::parse();
 
-    // Set logging levels
     let logging_init = TermLogger::init(
         if      arguments.quiet   { LevelFilter::Warn  }
         else if arguments.verbose { LevelFilter::Debug }
@@ -46,13 +46,11 @@ fn main() {
     );
 
     if logging_init.is_err() {
-        println!("Something went wrong when initating the logger. As a result, this program cannot continue.");
+        println!("Something went wrong when initiating the logger. As a result, this program cannot continue.");
         process::exit(1);
     }
 
-    info!("---------- OVERWATCH ---------");
-
-    let rules_dir_str = "rules";
+    let rules_dir_str = &arguments.custom_rules_directory;
 
     if !Path::new(rules_dir_str).exists() {
         // TODO: Download rules from GitHub
@@ -65,25 +63,32 @@ fn main() {
     let response = match get_response {
         Ok(response) => response,
         Err(err) => {
-            error!("Could not get headers from target. Please check spelling and internet connection.");
             error!("{}", err);
             process::exit(3);
         },
     };
 
-    info!("Initialisation complete");
+    info!("---------- OVERWATCH ----------");
 
-    // Already checked that the dir exists, so there shouldn't be a problem reading it
-    // ...hopefully we aren't in a filesystem that's write only!
-    // Allows a user to define custom rules for tests, and allows us to be
-    // as generic as possible
+    // Already checked that the dir exists before this point,
+    // so there shouldn't be a problem reading it...hopefully we aren't
+    // in a filesystem that's write only!
+
+    // Reading in TOML files that define tests allows
+    //     1. a user to define custom rules for tests
+    //     2. allows us to be as generic as possible
+
+    // The following is a very generic way of doing this, which is good
+    // as it lets us keep as much logic as possible out of the main function
     let rules_dir = fs::read_dir(rules_dir_str).unwrap();
+
+    // Loop over all the rule files in the rules directory.
     for entry in rules_dir {
         match entry {
             Ok(entry) => {
-                debug!("Handling rule file {:?}", entry.path());
-                let (scan_type, rules) = handle_rule_file::run(entry.path().to_str().unwrap());
-                info!("Running tests from {:?}", entry.path());
+                debug!("Processing rule file {:?}", entry.path());
+                let (title, scan_type, rules) = handle_rule_file::run(entry.path().to_str().unwrap());
+                info!("Running \"{}\" test from {:?}", title, entry.path());
                 handle_tests::run(&response, scan_type, rules);
             },
             Err(err) => eprintln!("Error reading entry: {}", err),
