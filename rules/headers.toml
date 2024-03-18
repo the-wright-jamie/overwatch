@@ -3,56 +3,65 @@
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP etc...
 
 [metadata]
-title = "Header Security Scoring"
+title = "Header Security Test"
 scan_type = 'headers'
 
 [content-security-policy]
 negative = ['unsafe-inline', "unsafe-eval", "img-src *", "script-src *", "style-src *", "font-src *", "child-src *", "object-src *", "report-uri"]
 positive = ["frame-ancestors", "default-src 'none'|default-src 'self'", "img-src 'self'", "script-src 'self'", "style-src 'self'", "font-src 'self'", "child-src 'self'", "object-src 'self'", "base-uri 'none'", "base-uri 'self'"]
 multiplier = 1
+required = true
 
 [strict-transport-security]
 negative = []
 positive = ["max-age", "includeSubDomains", "preload"]
 multiplier = 1
+required = true
 
 [x-content-type-options]
 negative = []
 positive = ['nosniff']
 multiplier = 1
+required = true
 
 [x-frame-options]
 negative = ["ALLOW-FROM"]
 positive = ["DENY|SAMEORIGIN"]
 multiplier = 1
+required = true
 
 [x-xss-protection]
 negative = ["present", "1", "mode=", "report="]
 positive = ["0"]
 multiplier = 1
+required = false
 
 [referrer-policy]
 negative = ["unsafe-url"]
 positive = ["strict-origin-when-cross-origin"]
 multiplier = 1
+required = true
 
 [cache-control]
 negative = []
 positive = ["must-revalidate", "proxy-revalidate"]
 multiplier = 1
+required = true
 
 [expect-ct]
 negative = ["present"]
 positive = []
 multiplier = 3
+required = false
 
 [access-control-allow-origin]
 negative = []
 positive = ["same-origin"]
 multiplier = 1
+required = true
 
 [x-powered-by]
 negative = ["present"]
 positive = []
 multiplier = 2
-
+required = false

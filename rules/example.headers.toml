@@ -1,0 +1,48 @@
+# The following is an example of how to define a headers test
+
+# The metadata table is required, specifically as it tells Overwatch what kind of
+# test this is. The metadata is the same across every test type.
+[metadata]
+# This can be anything, but it's recommended that it makes sense
+title = "Example Headers Test"
+# If it's a headers scan type, it must be defined as follows or else
+# the test runner will skip it - i.e. this is case sensitive
+scan_type = "headers"
+# additionally, adding the words "example" or "skip" to the file name,
+# will tell Overwatch to skip the file
+
+# the name of following tables after metadata must be the name of
+# the headers you want to define tests for
+# all of these values are required
+[header-name]
+# when defining tests, you can use the following optional special signals
+# → present: when used in negative, will tell the test to punish
+#   (increase the count of total tests, but not increase the score) the
+#   the tested domain. Will do the opposite when used in positive.
+# → |: if you use a pipe in a string, the will tell the test to look
+#   for any of the entries defined. For example, if you define
+#   "DENY|SAMEORIGIN", the test will look for either "DENY" or
+#   "SAMEORIGIN" in the header, and will award one point if either of
+#   them are found.
+# → ?: optional test - when used in negative, if present, will not award
+#   a point but not increase the total test count. When used in positive,
+#   it will add a point but not increase the total tests. In either
+#   situation, an entry not being present in not increase the total tests
+#   count
+
+# here you can define tests in an array for entries in the header
+# which, if present, will not award points but increase the total tests
+# count.
+negative = ["define", "negative", "header|definitions", "here?"]
+# here you can define tests in an array for entries in the header
+# which, if present, will award points. if they are absent, a point
+# will not be awarded but will increase the total test count
+positive = ["define", "positive", "header|definitions", "here?"]
+# allows you to give more weight to a header test.
+multiplier = 1
+# allows you to define if the header is required. if it is, and it isn't present
+# on the tested domain, all the tests defined for the header will be added to the
+# total available score. if a header has "present" defined in it's negative tests,
+# it will add 1 point to the total score and increase the total tests by 1. The
+# positive tests will still be added to the total score
+required = true

@@ -32,6 +32,10 @@ pub struct Parameters {
     /// Allows the user to define a custom rules folder location
     #[arg(long, default_value_t = String::from("rules"))]
     custom_rules_directory: String,
+
+    /// Deactivates automatic redirects
+    #[arg(short, long)]
+    no_redirect: bool,
 }
 
 fn main() {
@@ -50,6 +54,8 @@ fn main() {
         process::exit(1);
     }
 
+    info!("---------- OVERWATCH ----------");
+
     let rules_dir_str = &arguments.custom_rules_directory;
 
     if !Path::new(rules_dir_str).exists() {
@@ -58,7 +64,7 @@ fn main() {
         process::exit(2);
     }
 
-    let get_response = save_response::run(&arguments.target);
+    let get_response = save_response::run(&arguments.target, &arguments.no_redirect);
 
     let response = match get_response {
         Ok(response) => response,
@@ -67,8 +73,6 @@ fn main() {
             process::exit(3);
         },
     };
-
-    info!("---------- OVERWATCH ----------");
 
     // Already checked that the dir exists before this point,
     // so there shouldn't be a problem reading it...hopefully we aren't
@@ -87,6 +91,10 @@ fn main() {
         match entry {
             Ok(entry) => {
                 debug!("Processing rule file {:?}", entry.path());
+                if entry.path().to_str().unwrap().contains("example") || entry.path().to_str().unwrap().contains("skip") {
+                    debug!("File had \"example\" or \"skip\" in its name, skipping");
+                    continue;
+                }
                 let (title, scan_type, rules) = handle_rule_file::run(entry.path().to_str().unwrap());
                 info!("Running \"{}\" test from {:?}", title, entry.path());
                 handle_tests::run(&response, scan_type, rules);

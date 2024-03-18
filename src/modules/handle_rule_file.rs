@@ -13,7 +13,7 @@ pub fn run(entry: &str) -> (String, String, Value) {
     debug!("Loading rules from {:?}...", entry);
     let path = std::path::Path::new(entry);
 
-    // Checks should be done before the following is being run - 
+    // Checks should be done before the following is being run -
     // so we can assume it's save to unwrap with no error handling
     let file = fs::read_to_string(path).unwrap();
     let rules = file.parse::<Value>().unwrap();
