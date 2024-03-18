@@ -1,4 +1,4 @@
-use isahc::{Body, Response};
+use isahc::{http::StatusCode, Body, Response};
 use log::{warn, info, debug};
 
 pub fn run(target: &str, no_redirect: &bool) -> Result<Response<Body>, isahc::Error> {
@@ -9,8 +9,8 @@ pub fn run(target: &str, no_redirect: &bool) -> Result<Response<Body>, isahc::Er
     match response {
         Ok(mut res) => {
             debug!("{}", res.status());
-            debug!("{:?}", res.headers());
-            while res.status() == 301 && !no_redirect {
+            debug!("\n{:#?}", res.headers());
+            while res.status() == StatusCode::MOVED_PERMANENTLY && !no_redirect {
                 // Using these nasty unwraps here as we know the website exists - we got a redirect
                 // request, so we can safely follow is. The problem is, if internet connection is
                 // dropped somehow inbetween here then this will crash... Perhaps an edge
@@ -21,9 +21,9 @@ pub fn run(target: &str, no_redirect: &bool) -> Result<Response<Body>, isahc::Er
                 info!("Accessing {}...", location);
                 res = isahc::get(location).unwrap();
                 debug!("{}", res.status());
-                debug!("{:?}", res.headers());
+                debug!("{:#?}", res.headers());
             }
-            if res.status() != 200 {
+            if res.status() != StatusCode::OK {
                 warn!("Non-200 response: {}", res.status());
             }
             Ok(res)

@@ -1,7 +1,8 @@
 use isahc::{http::{HeaderMap, HeaderName, HeaderValue}, Body, Response};
-use log::{info, debug, trace, warn};
+use log::{error, warn, info, debug, trace};
 use toml::{map::Map, Value::{self, Table}};
 use serde::Deserialize;
+use std::process;
 
 #[derive(Deserialize)]
 struct HeaderRuleDefinition {
@@ -39,7 +40,7 @@ fn test_headers(rules: &Value, headers: &HeaderMap) -> (u32, u32) {
         // get all the require defined headers
         for (header_rule, definition) in table {
             if header_rule == "metadata" { continue; }
-            let header_definition: HeaderRuleDefinition = to_header_rule_definition(definition);
+            let header_definition: HeaderRuleDefinition = to_header_rule_definition(definition, header_rule);
             if header_definition.required {
                 untested_headers.push(header_rule.to_string());
             }
@@ -67,7 +68,7 @@ fn test_headers(rules: &Value, headers: &HeaderMap) -> (u32, u32) {
     (added_passed, added_total)
 }
 
-fn to_header_rule_definition(toml_value: &Value) -> HeaderRuleDefinition {
+fn to_header_rule_definition(toml_value: &Value, header_name: &String) -> HeaderRuleDefinition {
     // FIXME: There has to be a better way of doing this...
     let toml_definition_sanitize = toml_value.to_string()
         .replace("\",", "\".")  // Preserve arrays for what's to come
@@ -75,8 +76,15 @@ fn to_header_rule_definition(toml_value: &Value) -> HeaderRuleDefinition {
         .replace("{ ", "")      // Delete starting bracket
         .replace(" }", "")      // Delete ending bracket
         .replace("\".", "\","); // Covert preserved arrays back into arrays
-    let header_definition: HeaderRuleDefinition = toml::from_str(&toml_definition_sanitize).unwrap();
-    header_definition
+    let header_definition: Result<HeaderRuleDefinition, toml::de::Error> = toml::from_str(&toml_definition_sanitize);
+    match header_definition {
+        Ok(definition) => definition,
+        Err(e) => {
+            error!("Problem parsing rule file");
+            error!("[{}] is {}", header_name, e.message());
+            process::exit(4);
+        }
+    }
 }
 
 fn handle_headers_definition_table(header: (&HeaderName, &HeaderValue), table: &Map<String, Value>) -> (u32, u32, String) {
@@ -87,7 +95,7 @@ fn handle_headers_definition_table(header: (&HeaderName, &HeaderValue), table: &
     for (header_rule, definition) in table {
         if header_rule == "metadata" { continue; }
 
-        let header_definition: HeaderRuleDefinition = to_header_rule_definition(definition);
+        let header_definition: HeaderRuleDefinition = to_header_rule_definition(definition, header_rule);
 
         if check_header_is_present(header, header_rule.to_string()) {
             let (new_passed, new_total) = process_header_rule_definition(header, &header_definition);
@@ -182,7 +190,7 @@ fn handle_untested_required_headers(untested_header: String, table: &Map<String,
     for (header_rule, definition) in table {
         if header_rule == "metadata" { continue; }
         if header_rule == &untested_header {
-            let header_definition: HeaderRuleDefinition = to_header_rule_definition(definition);
+            let header_definition: HeaderRuleDefinition = to_header_rule_definition(definition, header_rule);
             if header_definition.negative.iter().any(|e| e == "present") {
                 let length = header_definition.negative.len() as u32;
                 added_total += length * header_definition.multiplier as u32;
